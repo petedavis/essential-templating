@@ -6,7 +6,7 @@ namespace Essential.Templating.Razor.Host.Execution
     {
         public static RazorExecutionSandbox Create(AppDomain domain)
         {
-            
+            return null;
         }
     }
 }

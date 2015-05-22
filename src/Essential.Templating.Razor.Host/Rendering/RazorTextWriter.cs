@@ -30,7 +30,7 @@ namespace Essential.Templating.Razor.Host.Rendering
         // Internal for unit testing
         private StringCollectionTextWriter BufferedWriter { get; set; }
 
-        private TextWriter UnbufferedWriter { get; }
+        private TextWriter UnbufferedWriter { get; set; }
 
         private TextWriter TargetWriter { get; set; }
 
@@ -84,15 +84,15 @@ namespace Essential.Templating.Razor.Host.Rendering
         }
 
         /// <inheritdoc />
-        public override Task WriteAsync([NotNull] char[] buffer, int index, int count)
+        public override Task WriteAsync(char[] buffer, int index, int count)
         {
             if (index < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(index));
+                throw new ArgumentOutOfRangeException("index");
             }
             if (count < 0 || (buffer.Length - index < count))
             {
-                throw new ArgumentOutOfRangeException(nameof(count));
+                throw new ArgumentOutOfRangeException("count");
             }
 
             return TargetWriter.WriteAsync(buffer, index, count);

@@ -301,7 +301,7 @@ namespace Essential.Templating.Razor.Host.Templating
             }
         }
 
-        private static void WriteAttributeTo(
+        private void WriteAttributeTo(
             TextWriter writer,
             string name,
             PositionTagged<string> prefix,

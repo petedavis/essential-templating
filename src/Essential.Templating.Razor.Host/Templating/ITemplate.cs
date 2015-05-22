@@ -30,5 +30,6 @@ namespace Essential.Templating.Razor.Host.Templating
         bool IsLayoutBeingRendered { get; set; }
         
         void EnsureRenderedBodyOrSections();
+        Task ExecuteAsync();
     }
 }

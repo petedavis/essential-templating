@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Reflection;
 using Essential.Templating.Razor.Host.Compilation;
 using Essential.Templating.Razor.Host.Storage;
@@ -49,10 +50,14 @@ namespace Essential.Templating.Razor.Host.Execution
             return _references.ContainsKey(id);
         }
 
-        public ITemplate Create(string id, TemplateContext context)
+        public ITemplate Create(string id)
         {
             var reference = _references[id];
-            var type = Type.GetType(reference.AssemblyQualifiedTypeName);
+            var type = AppDomain.CurrentDomain.GetAssemblies()
+                .Where(x => x.FullName.StartsWith("RazorGeneratedTemplates"))
+                .SelectMany(x => x.GetExportedTypes())
+                .FirstOrDefault(x => x.AssemblyQualifiedName == reference.AssemblyQualifiedTypeName);
+            //var type = Type.GetType(reference.AssemblyQualifiedTypeName);
             if (type == null)
             {
                 var message = string.Format("Couldn't load template type '{0}'.", reference.AssemblyQualifiedTypeName);

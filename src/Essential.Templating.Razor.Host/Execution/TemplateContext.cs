@@ -19,7 +19,7 @@ namespace Essential.Templating.Razor.Host.Execution
             Writer = (TextWriter) info.GetValue("Writer", typeof (TextWriter));
         }
 
-        public TextWriter Writer { get; protected set; }
+        public TextWriter Writer { get; protected internal set; }
 
         public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
         {
