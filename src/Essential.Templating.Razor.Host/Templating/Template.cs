@@ -4,10 +4,10 @@ using System.Diagnostics.Contracts;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Essential.Templating.Razor.Host.Execution;
 using Essential.Templating.Razor.Host.Rendering;
-using Microsoft.Framework.WebEncoders;
 
 namespace Essential.Templating.Razor.Host.Templating
 {
@@ -15,7 +15,6 @@ namespace Essential.Templating.Razor.Host.Templating
     {
         private bool _renderedBody;
         private TemplateContext _templateContext;
-        private readonly HtmlEncoder _htmlEncoder = new HtmlEncoder();
         private readonly HashSet<string> _renderedSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         private readonly Dictionary<string, RenderAsyncDelegate> _sectionWriters =
@@ -224,12 +223,11 @@ namespace Essential.Templating.Razor.Host.Templating
         {
             EnsureTemplateContextIsSet();
 
-            WriteTo(writer, _htmlEncoder, value, false);
+            WriteTo(writer, value, false);
         }
 
         private static void WriteTo(
             TextWriter writer,
-            IHtmlEncoder encoder,
             object value,
             bool escapeQuotes)
         {
@@ -268,21 +266,17 @@ namespace Essential.Templating.Razor.Host.Templating
                 return;
             }
 
-            WriteTo(writer, encoder, value.ToString());
+            WriteTo(writer, value.ToString());
         }
 
-        private void WriteTo(TextWriter writer, string value)
-        {
-            WriteTo(writer, _htmlEncoder, value);
-        }
-
-        private static void WriteTo(TextWriter writer, IHtmlEncoder encoder, string value)
+        private static void WriteTo(TextWriter writer, string value)
         {
             if (!string.IsNullOrEmpty(value))
             {
-                encoder.HtmlEncode(value, writer);
+                WebUtility.HtmlEncode(value, writer);
             }
         }
+
 
         private static void WriteLiteralTo(TextWriter writer, object value)
         {

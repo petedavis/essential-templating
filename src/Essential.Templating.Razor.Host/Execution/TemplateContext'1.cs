@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.Serialization;
+using System.Security;
 
 namespace Essential.Templating.Razor.Host.Execution
 {
@@ -19,6 +20,7 @@ namespace Essential.Templating.Razor.Host.Execution
             Model =  (T) info.GetValue("Model", typeof (T));
         }
 
+        [SecurityCritical]
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             info.AddValue("Model", Model);

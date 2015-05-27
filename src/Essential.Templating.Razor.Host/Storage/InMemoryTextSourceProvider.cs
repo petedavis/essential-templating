@@ -1,8 +1,10 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
 
 namespace Essential.Templating.Razor.Host.Storage
 {
+    [Serializable]
     public class InMemoryTextSourceProvider : ITextSourceProvider
     {
         private readonly ConcurrentDictionary<string, string> _templates = 

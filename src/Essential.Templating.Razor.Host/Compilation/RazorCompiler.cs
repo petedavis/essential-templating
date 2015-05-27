@@ -1,20 +1,26 @@
 ﻿using System;
+using System.CodeDom;
+using System.CodeDom.Compiler;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
+using System.Security;
+using System.Web.Razor;
+using System.Web.Razor.Text;
 using Essential.Templating.Razor.Host.Storage;
 using Essential.Templating.Razor.Host.Templating;
-using Microsoft.AspNet.Razor;
-using Microsoft.AspNet.Razor.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CSharp;
 
 namespace Essential.Templating.Razor.Host.Compilation
 {
+    [Serializable]
     public class RazorCompiler
     {
         private readonly RazorTemplateEngine _engine;
 
+        [SecurityCritical]
         public RazorCompiler()
         {
             var host = new RazorEngineHost(new CSharpRazorCodeLanguage());
@@ -23,11 +29,13 @@ namespace Essential.Templating.Razor.Host.Compilation
             _engine = new RazorTemplateEngine(host);
         }
 
+        [SecurityCritical]
         public CompilationResult Compile(TextSource source)
         {
             return CompileMany(new []{source});
         }
 
+        [SecurityCritical]
         public CompilationResult CompileMany(TextSource[] sources)
         {
             Contract.Requires<ArgumentNullException>(sources != null, "sources");
@@ -58,7 +66,7 @@ namespace Essential.Templating.Razor.Host.Compilation
             }
             var trees = results.Select(x => x.results.GeneratedCode)
                 .AsParallel()
-                .Select(c => CSharpSyntaxTree.ParseText(c))
+                .Select(ToCode)
                 .ToList();
             var compilation = CSharpCompilation.Create(assemblyName)
                 .AddReferences(
@@ -67,20 +75,31 @@ namespace Essential.Templating.Razor.Host.Compilation
                 )
                 .AddSyntaxTrees(trees)
                 .WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-            var diagnostics = compilation.GetDiagnostics();
-            var compilationErrors = diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error).ToArray();
-            if (compilationErrors.Length > 0)
-            {
-                throw new RazorCompilerException(compilationErrors);
-            }
+            
             using (var ms = new MemoryStream())
             {
-                compilation.Emit(ms);
+                var result = compilation.Emit(ms);
+                if (!result.Success)
+                {
+                    var diagnostics = result.Diagnostics;
+                    var compilationErrors = diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error).ToArray();
+                    throw new RazorCompilerException(compilationErrors);
+                }
                 ms.Position = 0;
                 return new CompilationResult(
                     results.Select(x => new TemplateReference(x.source.Id, x.fullyQualifiedName, x.source.FileName)).ToList(),
                     ms.ToArray());
             }
+        }
+
+        [SecurityCritical]
+        private SyntaxTree ToCode(CodeCompileUnit codeCompileUnit)
+        {
+            var writer = new StringWriter();
+            var provider = new CSharpCodeProvider();
+            provider.GenerateCodeFromCompileUnit(codeCompileUnit, writer, new CodeGeneratorOptions());
+            var code =  writer.GetStringBuilder().ToString();
+            return CSharpSyntaxTree.ParseText(code);
         }
     }
 }

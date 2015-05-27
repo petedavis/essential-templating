@@ -1,9 +1,12 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Runtime.Serialization;
+using System.Security;
 using Microsoft.CodeAnalysis;
 
 namespace Essential.Templating.Razor.Host.Compilation
 {
+    [Serializable]
     public class RazorCompilerException : RazorException
     {
         public RazorCompilerException(Diagnostic[] diagnostics) : base(string.Format("Compilation stage failed: {0} errors found.", diagnostics.Length))
@@ -18,6 +21,7 @@ namespace Essential.Templating.Razor.Host.Compilation
             Errors = (string[]) info.GetValue("Errors", typeof (string[]));
         }
 
+        [SecurityCritical]
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             info.AddValue("Errors", Errors);

@@ -9,6 +9,7 @@ using Essential.Templating.Razor.Host.Templating;
 
 namespace Essential.Templating.Razor.Host.Execution
 {
+    [Serializable]
     public class TemplateFactory
     {
         private readonly ConcurrentDictionary<string, TemplateReference> _references = 

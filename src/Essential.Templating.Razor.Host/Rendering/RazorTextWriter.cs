@@ -6,7 +6,6 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Framework.Internal;
 
 namespace Essential.Templating.Razor.Host.Rendering
 {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using System.Security;
+using System.Web.Razor.Parser.SyntaxTree;
 
 namespace Essential.Templating.Razor.Host.Compilation
 {
@@ -19,6 +20,7 @@ namespace Essential.Templating.Razor.Host.Compilation
 
         public RazorError[] Errors { get; private set; }
 
+        [SecurityCritical]
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             info.AddValue("Errors", Errors);

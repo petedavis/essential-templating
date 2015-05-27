@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
+using System.Security;
 using System.Threading.Tasks;
 using Essential.Templating.Razor.Host.Compilation;
 using Essential.Templating.Razor.Host.Rendering;
@@ -10,11 +11,16 @@ using Essential.Templating.Razor.Host.Templating;
 
 namespace Essential.Templating.Razor.Host.Execution
 {
-    public abstract class RazorExecutionHost : IRazorExecutionHost
+    [Serializable]
+    public abstract class RazorExecutionHost : MarshalByRefObject, IRazorExecutionHost
     {
-        private readonly ITextSourceProvider _textSourceProvider;
+        protected ITextSourceProvider _textSourceProvider;
 
-        private readonly RazorCompiler _compiler;
+        protected RazorCompiler _compiler;
+
+        protected RazorExecutionHost()
+        {
+        }
 
         protected RazorExecutionHost(ITextSourceProvider textSourceProvider, RazorCompiler compiler)
         {
@@ -37,7 +43,8 @@ namespace Essential.Templating.Razor.Host.Execution
             return TemplateFactory.IsAttached(id) || _textSourceProvider.CanLoad(id);
         }
 
-        public Task ExecuteAsync(string id, TemplateContext context, bool forceRecompile = false)
+        [SecurityCritical]
+        public virtual Task ExecuteAsync(string id, TemplateContext context, bool forceRecompile = false)
         {
             var template = Load(id, forceRecompile);
             if (template == null)
@@ -49,7 +56,8 @@ namespace Essential.Templating.Razor.Host.Execution
 
         protected abstract TemplateFactory TemplateFactory { get; }
 
-        private ITemplate Load(string id, bool forceRecompile)
+        [SecurityCritical]
+        protected ITemplate Load(string id, bool forceRecompile)
         {
             ITemplate template = null;
             if (TemplateFactory.IsAttached(id) && !forceRecompile)
@@ -77,7 +85,7 @@ namespace Essential.Templating.Razor.Host.Execution
             return template;
         }
 
-        private async Task RenderAsync(ITemplate template, TemplateContext context, bool forceRecompile)
+        protected async Task RenderAsync(ITemplate template, TemplateContext context, bool forceRecompile)
         {
             template.RenderPartialAsyncDelegate = (s, o, writer) =>
             {

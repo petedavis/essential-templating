@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Security;
+using System.Threading.Tasks;
 using Essential.Templating.Razor.Host.Storage;
 
 namespace Essential.Templating.Razor.Host.Execution
@@ -9,6 +10,7 @@ namespace Essential.Templating.Razor.Host.Execution
 
         bool CanExecute(string id);
 
+        [SecurityCritical]
         Task ExecuteAsync(string id, TemplateContext context, bool forceRecompile = false);
     }
 }
